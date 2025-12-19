@@ -105,18 +105,23 @@ button:active {
 
 /* 链接容器样式（修复内联样式冲突，适配动态按钮） */
 #linkBox {
-  /* 覆盖内联样式的布局，解决按钮排版 */
-  display: none !important; /* 初始隐藏，JS控制显示 */
+  display: none !important;
+  margin-top: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+}
+
+#linkBox.link-box-show {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  align-items: center !important;
   margin-top: 20px !important;
   padding: 15px !important;
   border: 1px solid #eee !important;
   border-radius: 6px !important;
   background-color: #f9fafb !important;
-  /* 核心：按钮排版 - 换行+间距 */
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 12px !important; /* 按钮之间的间距 */
-  align-items: center !important;
 }
 
 /* 链接标题样式（独占一行） */

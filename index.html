@@ -23,7 +23,7 @@
       <h3>你的激活码：<span id="codeText"></span></h3>
     </div>
 
-  <div id="linkBox" style="display: none; margin-top: 20px; padding: 15px; border: 1px solid #eee;"></div>
+  <div id="linkBox" style="display: none;"></div>
   </div>
 
   <script>
@@ -50,6 +50,13 @@
 
     // 生成激活码
     async function generateCode() {
+      const linkBox = document.getElementById("linkBox");
+      linkBox.innerHTML = "";
+      linkBox.classList.remove("link-box-show"); // 移除显示类
+      linkBox.style.display = "none";
+  // 同时重置激活码结果（可选）
+  document.getElementById("codeResult").style.display = "none";
+
       const phone = document.getElementById("phone").value.trim();
       if (!/^\d{11}$/.test(phone)) {
         alert("请输入11位有效手机号！");
@@ -131,7 +138,8 @@
 
           // 有有效链接才显示容器
           if (hasValidLink) {
-            linkBox.style.display = "block";
+            linkBox.classList.add("link-box-show"); 
+            linkBox.style.display = "flex"; 
           }
         }
       } catch (e) {
