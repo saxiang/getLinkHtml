@@ -17,7 +17,10 @@
       <label>手机号码：</label>
       <input type="tel" id="phone" placeholder="请输入11位手机号" maxlength="11">
     </div>
-    <button onclick="generateCode()">生成激活码</button>
+    <button class="generate-btn" onclick="generateCode()">
+     <span class="loading-spinner"></span>
+     <span class="btn-text">生成激活码</span>
+    </button>   
 
     <div id="codeResult" style="display: none; margin-top: 20px;">
       <h3>你的激活码：<span id="codeText"></span></h3>
@@ -50,16 +53,32 @@
 
     // 生成激活码
     async function generateCode() {
+
+       const generateBtn = document.querySelector('.generate-btn');
+       generateBtn.disabled = true; // 原生禁用
+       generateBtn.classList.add('loading'); 
+
       const linkBox = document.getElementById("linkBox");
       linkBox.innerHTML = "";
       linkBox.classList.remove("link-box-show"); // 移除显示类
       linkBox.style.display = "none";
   // 同时重置激活码结果（可选）
-  document.getElementById("codeResult").style.display = "none";
+      document.getElementById("codeResult").style.display = "none";
 
       const phone = document.getElementById("phone").value.trim();
       if (!/^\d{11}$/.test(phone)) {
         alert("请输入11位有效手机号！");
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('loading');
+        return
+      }
+
+      // 新增：弹窗确认手机号
+       const confirmResult = confirm(`你输入的手机号码是：${phone}\n是否确认生成激活码？`);
+      // 如果用户点击“取消”，直接终止流程
+       if (!confirmResult) {
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('loading');
         return;
       }
 
@@ -86,7 +105,11 @@
         }
       } catch (e) {
         alert("网络错误：" + e.message);
-      }
+      } finally {
+    // 无论成功/失败，最终恢复按钮（finally 确保一定会执行）
+    generateBtn.disabled = false;
+    generateBtn.classList.remove('loading');
+     }
     }
 
     // 获取feishu_link等信息
