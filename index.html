@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3Guys三贱客</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>3Guys三贱客</h2>
+    <div>
+      <label>产品编号：</label>
+      <input type="text" id="productId" readonly>
+    </div>
+    <div>
+      <label>手机号码：</label>
+      <input type="tel" id="phone" placeholder="请输入11位手机号" maxlength="11">
+    </div>
+    <button onclick="generateCode()">生成激活码</button>
+
+    <div id="codeResult" style="display: none; margin-top: 20px;">
+      <h3>你的激活码：<span id="codeText"></span></h3>
+    </div>
+
+    <div id="linkBox" style="display: none; margin-top: 20px; padding: 15px; border: 1px solid #eee;">
+      <!-- <h3>相关链接</h3> -->
+      <!-- <p>📖 使用指南：<a id="guide" target="_blank"></a></p>
+      <p>📱 飞书文档：<a id="feishu" target="_blank"></a></p>
+      <p>🔧 快捷指令：<a id="shortcut" target="_blank"></a></p> -->
+    </div>
+  </div>
+
+  <script>
+    let productCode = "";
+
+    // 1. 解析URL中的code参数（核心函数）
+    function getUrlParam(paramName) {
+      // 获取URL中?后的参数部分
+      const searchParams = new URLSearchParams(window.location.search);
+      // 返回参数值，若无则返回默认值001
+      return searchParams.get(paramName) || "001";
+    }
+
+    // 2. 页面加载完成后，自动填充产品编号
+    window.onload = function() {
+      // 提取URL中的code参数（比如?code=001 → 001）
+       productCode = getUrlParam("code");
+      // 填充到产品编号输入框
+      document.getElementById("productId").value = productCode;
+    };
+
+    // 后端接口地址（和login.3guys.com.cn共用同一个后端）
+    const API_BASE = "https://3guys.com.cn"; 
+
+    // 生成激活码
+    async function generateCode() {
+      const phone = document.getElementById("phone").value.trim();
+      if (!/^\d{11}$/.test(phone)) {
+        alert("请输入11位有效手机号！");
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("product_id", productCode);
+        formData.append("phone", phone);
+        
+        const res = await fetch(`${API_BASE}/generate_codes`, {
+          method: "POST",
+          body: formData,
+          mode: "cors"
+        });
+        const data = await res.json();
+
+        if (data.code === 200) {
+          // 显示激活码
+          document.getElementById("codeText").textContent = data.actcode;
+          document.getElementById("codeResult").style.display = "block";
+          // 获取链接信息
+          getLinks();
+        } else {
+          alert(data.msg || "激活码生成失败");
+        }
+      } catch (e) {
+        alert("网络错误：" + e.message);
+      }
+    }
+
+    // 获取feishu_link等信息
+      async function getLinks() {
+      // 清空原有内容（避免重复生成按钮）
+      const linkBox = document.getElementById("linkBox");
+      linkBox.innerHTML = "";
+      linkBox.style.display = "none";
+
+      try {
+        // 请求产品链接信息
+        const res = await fetch(`${API_BASE}/get_product_info?id=${productCode}`);
+        const data = await res.json();
+
+        // 适配接口返回格式：status=ok 且 code=200 且 data存在
+        if (data.status === "ok" && data.code === 200 && data.data) {
+          const linkData = data.data;
+          // 定义链接配置：按钮文本 + 对应字段名
+          const linkConfig = [
+            { text: "使用指南", key: "guide_link" },
+            { text: "飞书表格", key: "feishu_link" },
+            { text: "快捷指令", key: "shortcut_link" }
+          ];
+
+          // 标题（可选）
+          const title = document.createElement("h3");
+          title.textContent = "相关链接";
+          linkBox.appendChild(title);
+
+          // 遍历配置，生成有效按钮
+          let hasValidLink = false;
+          linkConfig.forEach(item => {
+            const linkUrl = linkData[item.key];
+            // 仅当链接非空、非#时生成按钮
+            if (linkUrl && linkUrl.trim() !== "" && linkUrl !== "#") {
+              hasValidLink = true;
+              // 创建按钮元素
+              const btn = document.createElement("a");
+              btn.className = "link-btn"; // 加样式类
+              btn.textContent = item.text;
+              // 点击事件：新窗口打开链接
+              btn.onclick = function() {
+                window.open(linkUrl, "_blank");
+                return false; // 阻止a标签默认行为（可选）
+              };
+              linkBox.appendChild(btn);
+            }
+          });
+
+          // 有有效链接才显示容器
+          if (hasValidLink) {
+            linkBox.style.display = "block";
+          }
+        }
+      } catch (e) {
+        console.error("获取链接失败：", e);
+        // 可选：提示用户
+        // alert("获取相关链接失败");
+      }
+    }
+  </script>
+</body>
+</html>

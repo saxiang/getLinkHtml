@@ -1,0 +1,165 @@
+/* 全局重置 & 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Microsoft YaHei", Arial, sans-serif;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* 容器样式（居中+适配） */
+.container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* 标题样式 */
+h2 {
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+h3 {
+  color: #1f2937;
+  margin: 15px 0 10px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+/* 表单样式 */
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+input[readonly] {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* 生成按钮样式 */
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #4398ee;
+}
+
+button:active {
+  background-color: #1e40af;
+}
+
+/* 激活码结果样式 */
+#codeResult {
+  padding: 15px;
+  background-color: #eff6ff;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+#codeText {
+  color: #2563eb;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+/* 链接容器样式（修复内联样式冲突，适配动态按钮） */
+#linkBox {
+  /* 覆盖内联样式的布局，解决按钮排版 */
+  display: none !important; /* 初始隐藏，JS控制显示 */
+  margin-top: 20px !important;
+  padding: 15px !important;
+  border: 1px solid #eee !important;
+  border-radius: 6px !important;
+  background-color: #f9fafb !important;
+  /* 核心：按钮排版 - 换行+间距 */
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important; /* 按钮之间的间距 */
+  align-items: center !important;
+}
+
+/* 链接标题样式（独占一行） */
+#linkBox h3 {
+  width: 100% !important; /* 标题不跟按钮挤在一起 */
+  margin: 0 0 10px 0 !important;
+  font-size: 16px !important;
+}
+
+/* 动态链接按钮核心样式（解决光标+间距+hover） */
+.link-btn {
+  /* 基础样式 */
+  padding: 10px 20px !important;
+  background-color: #2563eb !important;
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  /* 核心修复 */
+  cursor: pointer !important; /* 强制手型光标 */
+  user-select: none !important; /* 禁止文字选中 */
+  /* 交互效果 */
+  transition: background-color 0.2s !important;
+}
+
+.link-btn:hover {
+  background-color: #4398ee !important; /* hover加深 */
+  opacity: 0.9 !important;
+}
+
+/* 响应式适配（移动端） */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .link-btn {
+    width: 100%; /* 移动端按钮独占一行 */
+    text-align: center;
+  }
+}
