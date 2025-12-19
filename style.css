@@ -204,3 +204,14 @@ button:active {
 .generate-btn.loading .btn-text {
   display: none !important;
 }
+
+/* Element Plus弹窗层级兜底，避免被页面元素遮挡 */
+.el-message-box {
+  z-index: 99999 !important; /* 设为极高层级 */
+}
+.el-message-box__mask {
+  z-index: 99998 !important; /* 遮罩层层级略低 */
+}
+.el-message {
+  z-index: 99999 !important; /* 提示消息层级 */
+}
