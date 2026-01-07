@@ -9,30 +9,32 @@
 <body>
   <div class="container">
     <h2>3Guys三贱客</h2>
-    <div>
+    <!-- <div>
       <label>产品编号：</label>
       <input type="text" id="productId" readonly>
-    </div>
+    </div> -->
+    <!-- 核心修改：手机号输入框改为激活码输入框（32位） -->
     <div>
-      <label>手机号码：</label>
-      <input type="tel" id="phone" placeholder="请输入11位手机号" maxlength="11">
+      <label>激活码：</label>
+      <input type="text" id="actcode" placeholder="请输入32位激活码" maxlength="32">
     </div>
-    <button class="generate-btn" onclick="generateCode()">
+    <!-- 按钮文本改为“确认”，点击事件仍绑定核心函数 -->
+    <button class="generate-btn" onclick="verifyCode()">
      <span class="loading-spinner"></span>
-     <span class="btn-text">生成激活码</span>
+     <span class="btn-text">确认</span>
     </button>   
 
+    <!-- 保留原有激活码展示区域（仅修改文案） -->
     <div id="codeResult" style="display: none; margin-top: 20px;">
-      <h3>你的激活码：<span id="codeText"></span></h3>
+      <h3>激活码验证成功：<span id="codeText"></span></h3>
     </div>
 
   <div id="linkBox" style="display: none;"></div>
   </div>
 
+  <!-- 保留所有原有弹窗样式（完全不动） -->
   <div id="customConfirm" style="display: none; z-index: 99999;">
-    <!-- 遮罩层 -->
     <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99998;"></div>
-    <!-- 弹窗主体 -->
     <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 99999;">
       <div style="padding: 20px; font-size: 14px; color: #333; border-bottom: 1px solid #ebeef5;">
         <h3 style="margin: 0; font-size: 16px; color: #1f2329;">确认提示</h3>
@@ -45,16 +47,14 @@
     </div>
   </div>
 
-  <!-- 新增：自定义提示弹窗（替代ElMessage） -->
   <div id="customMessage" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 4px; color: #fff; z-index: 99999; font-size: 14px;"></div>
 
   <script>
     let productCode = "";
-  // 新增：自定义提示弹窗函数（模仿ElMessage）
+    // 保留原有提示弹窗函数（完全不动）
     function showMessage(msg, type = "error") {
     const msgBox = document.getElementById("customMessage");
     msgBox.textContent = msg;
-  // 根据类型设置样式
     if (type === "success") {
       msgBox.style.background = "#67c23a";
     } else if (type === "warning") {
@@ -62,14 +62,13 @@
     }  else {
      msgBox.style.background = "#f56c6c";
     }
-  // 显示并自动隐藏
      msgBox.style.display = "block";
      setTimeout(() => {
      msgBox.style.display = "none";
     }, 3000);
 }
 
-// 新增：自定义确认弹窗函数（模仿ElMessageBox.confirm，返回Promise）
+// 保留原有确认弹窗函数（完全不动）
 function showConfirm(msg) {
   return new Promise((resolve, reject) => {
     const confirmBox = document.getElementById("customConfirm");
@@ -77,151 +76,140 @@ function showConfirm(msg) {
     const cancelBtn = document.getElementById("confirmCancel");
     const okBtn = document.getElementById("confirmOk");
 
-    // 设置弹窗内容
     msgEl.textContent = msg;
     confirmBox.style.display = "block";
 
-    // 取消按钮事件
     cancelBtn.onclick = () => {
       confirmBox.style.display = "none";
-      reject("cancel"); // 取消时拒绝Promise
+      reject("cancel");
     };
 
-    // 确认按钮事件
     okBtn.onclick = () => {
       confirmBox.style.display = "none";
-      resolve("confirm"); // 确认时解析Promise
+      resolve("confirm");
     };
   });
 }
 
-    // 1. 解析URL中的code参数（核心函数）
+    // 保留原有URL参数解析逻辑（完全不动）
     function getUrlParam(paramName) {
-      // 获取URL中?后的参数部分
       const searchParams = new URLSearchParams(window.location.search);
-      // 返回参数值，若无则返回默认值001
       return searchParams.get(paramName) || "001";
     }
 
-    // 2. 页面加载完成后，自动填充产品编号
+    // 保留原有页面加载逻辑（完全不动）
     window.onload = function() {
-      // 提取URL中的code参数（比如?code=001 → 001）
        productCode = getUrlParam("code");
-      // 填充到产品编号输入框
       document.getElementById("productId").value = productCode;
     };
 
-    // 后端接口地址（和login.3guys.com.cn共用同一个后端）
+    // 后端接口地址（保留原有）
     const API_BASE = "https://3guys.com.cn"; 
 
-    // 生成激活码
-    async function generateCode() {
-
-       const generateBtn = document.querySelector('.generate-btn');
-       generateBtn.disabled = true; // 原生禁用
-       generateBtn.classList.add('loading'); 
+    // 核心修改：生成激活码→验证激活码逻辑
+    async function verifyCode() {
+       const verifyBtn = document.querySelector('.generate-btn');
+       verifyBtn.disabled = true; 
+       verifyBtn.classList.add('loading'); 
 
       const linkBox = document.getElementById("linkBox");
       linkBox.innerHTML = "";
-      linkBox.classList.remove("link-box-show"); // 移除显示类
+      linkBox.classList.remove("link-box-show"); 
       linkBox.style.display = "none";
-  // 同时重置激活码结果（可选）
       document.getElementById("codeResult").style.display = "none";
 
-      const phone = document.getElementById("phone").value.trim();
-      if (!/^\d{11}$/.test(phone)) {
-        showMessage("请输入11位有效手机号！");
-        generateBtn.disabled = false;
-        generateBtn.classList.remove('loading');
+      // 核心修改：校验激活码（32位）
+      const actcode = document.getElementById("actcode").value.trim();
+      if (!actcode) {
+        showMessage("请输入激活码！");
+        verifyBtn.disabled = false;
+        verifyBtn.classList.remove('loading');
+        return;
+      }
+      if (actcode.length !== 32) {
+        showMessage("请输入32位有效激活码！");
+        verifyBtn.disabled = false;
+        verifyBtn.classList.remove('loading');
         return;
       }
 
+      // 保留原有弹窗确认逻辑（仅修改提示文案）
       try {
-    await showConfirm(`你输入的手机号码是：${phone}\n是否确认生成激活码？`);
+    await showConfirm(`你输入的激活码是：${actcode}\n是否确认验证？`);
      } catch (err) {
-     generateBtn.disabled = false;
-     generateBtn.classList.remove('loading');
+     verifyBtn.disabled = false;
+     verifyBtn.classList.remove('loading');
        return;
      }
 
+      // 核心修改：调用验证激活码接口
       try {
         const formData = new FormData();
-        formData.append("product_id", productCode);
-        formData.append("phone", phone);
+        formData.append("actcode", actcode); // 仅传递激活码
         
-        const res = await fetch(`${API_BASE}/generate_codes`, {
+        const res = await fetch(`${API_BASE}/verify_actcode`, {
           method: "POST",
           body: formData,
           mode: "cors"
         });
         const data = await res.json();
 
-        if (data.code === 200) {
-          // 显示激活码
-          document.getElementById("codeText").textContent = data.actcode;
+        // 核心修改：验证成功判断（激活码存在且查询次数<3）
+        if (data.code === 200 && data.is_valid) {
+          // 保留原有显示逻辑：展示激活码+获取链接
+          document.getElementById("codeText").textContent = actcode;
           document.getElementById("codeResult").style.display = "block";
-          // 获取链接信息
-          getLinks();
+          getLinks(); // 保留原有getLinks逻辑
+          showMessage("激活码验证成功！", "success");
         } else {
-          showMessage(data.msg || "激活码生成失败");
+          showMessage(data.msg || "激活码验证失败");
         }
       } catch (e) {
         showMessage("网络错误：" + e.message);
       } finally {
-    // 无论成功/失败，最终恢复按钮（finally 确保一定会执行）
-    generateBtn.disabled = false;
-    generateBtn.classList.remove('loading');
+        verifyBtn.disabled = false;
+        verifyBtn.classList.remove('loading');
      }
     }
 
-    // 获取feishu_link等信息
+    // 完全保留原有getLinks逻辑（一行不动）
       async function getLinks() {
-      // 清空原有内容（避免重复生成按钮）
       const linkBox = document.getElementById("linkBox");
       linkBox.innerHTML = "";
       linkBox.style.display = "none";
 
       try {
-        // 请求产品链接信息
         const res = await fetch(`${API_BASE}/get_product_info?id=${productCode}`);
         const data = await res.json();
 
-        // 适配接口返回格式：status=ok 且 code=200 且 data存在
         if (data.status === "ok" && data.code === 200 && data.data) {
           const linkData = data.data;
-          // 定义链接配置：按钮文本 + 对应字段名
           const linkConfig = [
             { text: "使用指南", key: "guide_link" },
             { text: "飞书表格", key: "feishu_link" },
             { text: "快捷指令", key: "shortcut_link" }
           ];
 
-          // 标题（可选）
           const title = document.createElement("h3");
           title.textContent = "相关链接";
           linkBox.appendChild(title);
 
-          // 遍历配置，生成有效按钮
           let hasValidLink = false;
           linkConfig.forEach(item => {
             const linkUrl = linkData[item.key];
-            // 仅当链接非空、非#时生成按钮
             if (linkUrl && linkUrl.trim() !== "" && linkUrl !== "#") {
               hasValidLink = true;
-              // 创建按钮元素
               const btn = document.createElement("a");
-              btn.className = "link-btn"; // 加样式类
+              btn.className = "link-btn";
               btn.textContent = item.text;
-              // 点击事件：新窗口打开链接
               btn.onclick = function() {
                 window.open(linkUrl, "_blank");
-                return false; // 阻止a标签默认行为（可选）
+                return false;
               };
               linkBox.appendChild(btn);
             }
           });
 
-          // 有有效链接才显示容器
           if (hasValidLink) {
             linkBox.classList.add("link-box-show"); 
             linkBox.style.display = "flex"; 
